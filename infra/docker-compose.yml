@@ -1,0 +1,99 @@
+name: workplaceos
+x-python: &python
+  build:
+    context: ..
+    dockerfile: infra/python.Dockerfile
+  env_file: ../.env
+  environment: &environment
+    DATABASE_URL: postgresql+psycopg://workplace:${POSTGRES_PASSWORD:-local-demo-postgres-password}@postgres:5432/workplace
+    SERVICE_TOKEN: ${SERVICE_TOKEN:-local-demo-service-token}
+    MCP_HOST: 0.0.0.0
+  depends_on:
+    postgres:
+      condition: service_healthy
+  restart: unless-stopped
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: workplace
+      POSTGRES_USER: workplace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-demo-postgres-password}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U workplace"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  migrate:
+    <<: *python
+    command:
+      [
+        python,
+        -c,
+        "from app.memory.store import Store; from app.tools.domain import Domain; Domain(Store())",
+      ]
+    restart: "no"
+  booking:
+    <<: *python
+    command: [python, mcp/workplace-booking/server.py]
+    environment:
+      <<: *environment
+      PORT: 8001
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+  it:
+    <<: *python
+    command: [python, mcp/it-service/server.py]
+    environment:
+      <<: *environment
+      PORT: 8002
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+  directory:
+    <<: *python
+    command: [uvicorn, app.directory:app, --host, 0.0.0.0, --port, "8003"]
+  agent:
+    <<: *python
+    environment:
+      <<: *environment
+      BOOKING_MCP_URL: http://booking:8001/mcp
+      IT_MCP_URL: http://it:8002/mcp
+      DIRECTORY_URL: http://directory:8003
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      booking: { condition: service_started }
+      it: { condition: service_started }
+      directory: { condition: service_started }
+    healthcheck:
+      test:
+        [
+          CMD,
+          python,
+          -c,
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  retention:
+    <<: *python
+    command: [python, scripts/retention.py]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+  gateway:
+    build: { context: .., dockerfile: infra/gateway.Dockerfile }
+    env_file: ../.env
+    environment:
+      AGENT_URL: http://agent:8000
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+    depends_on:
+      agent: { condition: service_healthy }
+    restart: unless-stopped
+  web:
+    build: { context: .., dockerfile: infra/web.Dockerfile }
+    ports: ["127.0.0.1:${WEB_PORT:-5173}:80"]
+    depends_on: [gateway]
+    restart: unless-stopped
+volumes:
+  postgres-data:

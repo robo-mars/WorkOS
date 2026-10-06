@@ -1,0 +1,301 @@
+{
+  "search_policy": {
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 1000,
+          "minLength": 2,
+          "title": "Query",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "SearchPolicy",
+      "type": "object"
+    },
+    "description": "search_policy"
+  },
+  "search_employee": {
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "name_or_team": {
+          "maxLength": 100,
+          "minLength": 2,
+          "title": "Name Or Team",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name_or_team"
+      ],
+      "title": "SearchEmployee",
+      "type": "object"
+    },
+    "description": "search_employee"
+  },
+  "request_access": {
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "building": {
+          "enum": [
+            "Dubai",
+            "London"
+          ],
+          "title": "Building",
+          "type": "string"
+        },
+        "floor": {
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Floor",
+          "type": "integer"
+        },
+        "reason": {
+          "maxLength": 1000,
+          "minLength": 3,
+          "title": "Reason",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "building",
+        "floor",
+        "reason",
+        "user_id",
+        "idempotency_key"
+      ],
+      "title": "Access",
+      "type": "object"
+    },
+    "description": "request_access"
+  },
+  "search_rooms": {
+    "inputSchema": {
+      "properties": {
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "time": {
+          "default": "09:00",
+          "title": "Time",
+          "type": "string"
+        },
+        "capacity": {
+          "default": 1,
+          "title": "Capacity",
+          "type": "integer"
+        },
+        "building": {
+          "default": "Dubai",
+          "title": "Building",
+          "type": "string"
+        },
+        "kind": {
+          "default": "desk",
+          "enum": [
+            "desk",
+            "room"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "zone": {
+          "default": "",
+          "title": "Zone",
+          "type": "string"
+        },
+        "end_time": {
+          "default": "17:00",
+          "title": "End Time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date"
+      ],
+      "title": "search_roomsArguments",
+      "type": "object"
+    },
+    "description": "Find available desks or rooms in local office time. Search before reserving."
+  },
+  "reserve_room": {
+    "inputSchema": {
+      "properties": {
+        "room_id": {
+          "title": "Room Id",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        },
+        "start_time": {
+          "title": "Start Time",
+          "type": "string"
+        },
+        "end_time": {
+          "title": "End Time",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "room_id",
+        "user_id",
+        "start_time",
+        "end_time",
+        "idempotency_key"
+      ],
+      "title": "reserve_roomArguments",
+      "type": "object"
+    },
+    "description": "Reserve a resource. Requires a stable idempotency key."
+  },
+  "cancel_reservation": {
+    "inputSchema": {
+      "properties": {
+        "reservation_id": {
+          "title": "Reservation Id",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reservation_id",
+        "user_id",
+        "idempotency_key"
+      ],
+      "title": "cancel_reservationArguments",
+      "type": "object"
+    },
+    "description": "Cancel an owned reservation; runtime must collect approval first."
+  },
+  "create_it_ticket": {
+    "inputSchema": {
+      "properties": {
+        "category": {
+          "enum": [
+            "hardware",
+            "software",
+            "network",
+            "other"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "low",
+            "normal",
+            "high"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "description",
+        "priority",
+        "user_id",
+        "idempotency_key"
+      ],
+      "title": "create_it_ticketArguments",
+      "type": "object"
+    },
+    "description": "Create an IT support ticket; never put secrets in the description."
+  },
+  "get_it_ticket": {
+    "inputSchema": {
+      "properties": {
+        "ticket_id": {
+          "title": "Ticket Id",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticket_id",
+        "user_id"
+      ],
+      "title": "get_it_ticketArguments",
+      "type": "object"
+    },
+    "description": "Read the current employee's ticket."
+  },
+  "update_it_ticket": {
+    "inputSchema": {
+      "properties": {
+        "ticket_id": {
+          "title": "Ticket Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "in_progress",
+            "resolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticket_id",
+        "status",
+        "user_id",
+        "idempotency_key"
+      ],
+      "title": "update_it_ticketArguments",
+      "type": "object"
+    },
+    "description": "Update an owned support ticket; runtime requires confirmation."
+  }
+}

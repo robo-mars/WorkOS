@@ -1,0 +1,14 @@
+{
+  "mode": "real HTTP gateway + MCP + REST, local simulator data",
+  "passed": 8,
+  "checks": [
+    "MCP 8001: discovery + invalid arguments",
+    "MCP 8002: discovery + invalid arguments",
+    "Gateway authentication",
+    "Real booking + ticket MCP calls + grounded policy + request deduplication",
+    "Approval gate + durable resume + duplicate decision rejected",
+    "REST directory integration",
+    "Owned reservation cancellation through approval + MCP",
+    "Audit and metrics endpoints"
+  ]
+}
